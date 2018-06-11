@@ -10,6 +10,7 @@
         <div>
             File Hosting:
             <a href="{{ url_for('upload') }}">Upload</a>
+            <a href="{{ url_for('user_files') }}">Files</a>
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}

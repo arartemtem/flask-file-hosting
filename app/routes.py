@@ -31,3 +31,18 @@ def upload():
             return redirect('/upload')
             # return send_file(file_path, as_attachment=True, attachment_filename='testfile')  # download file
     return render_template('upload.html')
+
+@app.route('/files', methods=['GET', 'POST'])
+def user_files():
+    files = [
+        {
+            'filename': 'test1.jpg'
+        },
+        {
+            'filename': 'test2.pdf'
+        }, 
+        {
+            'filename': 'test3.avi'
+        }
+    ]
+    return render_template('files.html', files=files)
