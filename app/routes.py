@@ -1,11 +1,14 @@
 import os
 from flask import Flask, render_template, request, flash, redirect, url_for, send_file
-from app import app
+from flask_login import login_user, logout_user, current_user, login_required
+from app import app, db, functions
 from werkzeug.utils import secure_filename
-from app import functions
-# from app.forms import LoginForm, UploadForm
+from werkzeug.urls import url_parse
+from app.forms import LoginForm, UploadForm, AddUserForm
+from app.models import User, File
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -28,21 +31,53 @@ def upload():
             new_filename = md5_filename[7:]
             file_path = os.path.join(dir_for_file, new_filename)
             os.system('mv ' + tmp_file_path + ' '+ file_path)
-            return redirect('/upload')
+            user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
+            db.session.add(user_file)
+            db.session.commit()
+            flash('File added')
+            return redirect(url_for('upload'))
             # return send_file(file_path, as_attachment=True, attachment_filename='testfile')  # download file
     return render_template('upload.html')
 
 @app.route('/files', methods=['GET', 'POST'])
+@login_required
 def user_files():
-    files = [
-        {
-            'filename': 'test1.jpg'
-        },
-        {
-            'filename': 'test2.pdf'
-        }, 
-        {
-            'filename': 'test3.avi'
-        }
-    ]
+    files = File.query.filter_by(user_id=current_user.id).first()
     return render_template('files.html', files=files)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('user_files'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('user_files')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    if current_user.is_admin:
+        form = AddUserForm()
+        if form.validate_on_submit():
+            user = User(username=form.username.data, is_admin=form.is_admin.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('User added')
+    else:
+        return redirect(url_for('user_files'))
+    return render_template('admin.html', title='Admin', form=form)

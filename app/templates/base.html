@@ -9,8 +9,16 @@
     <body>
         <div>
             File Hosting:
+            {% if current_user.is_anonymous %}
+            <a href="{{ url_for('login') }}">Login</a>
+            {% else %}
             <a href="{{ url_for('upload') }}">Upload</a>
             <a href="{{ url_for('user_files') }}">Files</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('admin') }}">Admin</a>
+            {% endif %}
         </div>
         <hr>
         {% with messages = get_flashed_messages() %}

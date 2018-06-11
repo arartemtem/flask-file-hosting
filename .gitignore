@@ -2,3 +2,5 @@ venv/
 .vscode/
 files/
 __pycache__
+app.db
+app.db-journal
