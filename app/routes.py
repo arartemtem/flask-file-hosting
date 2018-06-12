@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from flask import Flask, render_template, request, flash, redirect, url_for, send_file
 from flask_login import login_user, logout_user, current_user, login_required
@@ -10,6 +11,7 @@ from app.models import User, File
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
+    form = UploadForm()
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -41,20 +43,21 @@ def upload():
                         flash('File already exists with name "' + exists_name + '"')
                         break
                 if not file_exists:
-                    user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
+                    user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), user_id=current_user.id)
                     db.session.add(user_file)
                     db.session.commit()
                     flash('File LINK added')  # change!     
             else:
                 os.system('mv ' + tmp_file_path + ' '+ file_path)
-                user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
+                user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), user_id=current_user.id)
                 db.session.add(user_file)
                 db.session.commit()
                 flash('File added')
             return redirect(url_for('upload'))
             # return send_file(file_path, as_attachment=True, attachment_filename='testfile')  # download file
-    return render_template('upload.html')
+    return render_template('upload.html', form=form)
 
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/files', methods=['GET', 'POST'])
 @login_required
 def user_files():
@@ -97,3 +100,35 @@ def admin():
     else:
         return redirect(url_for('user_files'))
     return render_template('admin.html', title='Admin', form=form)
+
+@app.route('/download/<user_name>/<file_id>')
+@login_required
+def download(user_name, file_id):
+    if current_user.username == user_name:
+        file = File.query.filter_by(id=file_id).first()
+        file_path = file.filepath
+        file_name = file.filename
+        return send_file(file_path, as_attachment=True, attachment_filename=file_name)
+    else:
+        return redirect(url_for('user_files'))
+
+@app.route('/delete/<user_name>/<file_id>')
+@login_required
+def delete(user_name, file_id):
+    if current_user.username == user_name:
+        file = File.query.filter_by(id=file_id).first()
+        file_name = file.filename
+        db.session.delete(file)
+        db.session.commit()
+        file_path = file.filepath
+        filepath_list = File.query.filter_by(filepath=file_path)
+        while filepath_list:
+            has_another_link = True
+        if has_another_link:
+            has_another_link = False
+        else:
+            os.remove(file_path)
+            os.removedirs(file_path[:-26])
+        flash('File ' + file_name + ' is deleted')
+
+    return redirect(url_for('user_files'))

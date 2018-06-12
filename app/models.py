@@ -28,6 +28,8 @@ class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filepath = db.Column(db.String(140))
     filename = db.Column(db.String(140))
+    uploadtime = db.Column(db.DateTime)
+    is_shared = db.Column(db.Boolean)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):

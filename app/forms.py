@@ -10,7 +10,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class UploadForm(FlaskForm):
-    file = FileField('File', validators=[DataRequired()])
+    file = FileField('File')
     submit = SubmitField('Upload')
 
 class AddUserForm(FlaskForm):
