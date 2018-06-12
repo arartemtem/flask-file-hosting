@@ -9,7 +9,7 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean)
     password_hash = db.Column(db.String(128))
     # posts = db.relationship('Post', backref='author', lazy='dynamic')
-    files = db.relationship('File', backref='author', lazy='dynamic')
+    files = db.relationship('File', backref='owner', lazy='dynamic')
 
     def __repr__(self):
         return '<id={} username={} is_admin={}>'.format(self.id, self.username, self.is_admin)

@@ -30,11 +30,27 @@ def upload():
             os.system('mkdir -p ' + dir_for_file)     # check for the existence of a folder!
             new_filename = md5_filename[7:]
             file_path = os.path.join(dir_for_file, new_filename)
-            os.system('mv ' + tmp_file_path + ' '+ file_path)
-            user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
-            db.session.add(user_file)
-            db.session.commit()
-            flash('File added')
+            if os.path.exists(file_path):
+                file_exists = False 
+                os.system('rm ' + tmp_file_path)
+                filepath_list = File.query.filter_by(filepath=file_path)
+                for f in filepath_list:
+                    if f.user_id == current_user.id:
+                        file_exists = True
+                        exists_name = f.filename
+                        flash('File already exists with name "' + exists_name + '"')
+                        break
+                if not file_exists:
+                    user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
+                    db.session.add(user_file)
+                    db.session.commit()
+                    flash('File LINK added')  # change!     
+            else:
+                os.system('mv ' + tmp_file_path + ' '+ file_path)
+                user_file = File(filepath=file_path, filename=filename, user_id=current_user.id)
+                db.session.add(user_file)
+                db.session.commit()
+                flash('File added')
             return redirect(url_for('upload'))
             # return send_file(file_path, as_attachment=True, attachment_filename='testfile')  # download file
     return render_template('upload.html')
@@ -42,7 +58,7 @@ def upload():
 @app.route('/files', methods=['GET', 'POST'])
 @login_required
 def user_files():
-    files = File.query.filter_by(user_id=current_user.id).first()
+    files = File.query.filter_by(user_id=current_user.id)
     return render_template('files.html', files=files)
 
 @app.route('/login', methods=['GET', 'POST'])
