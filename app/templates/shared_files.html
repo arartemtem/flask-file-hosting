@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <h2>Files</h2>
+    <table class="table">
+        <tr>
+            <th>#</th>
+            <th>File name</th> 
+            <th>Action</th>
+        </tr>
+        {% for file in files %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ file.filename }}</td>
+            <td>
+                <a href={{ url_for('download', user_name=current_user.username, file_id=file.id) }} type="button" class="btn btn-primary btn-sm" download> Download</a>
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+</div>
+{% endblock %}

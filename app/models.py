@@ -8,11 +8,11 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     is_admin = db.Column(db.Boolean)
     password_hash = db.Column(db.String(128))
-    # posts = db.relationship('Post', backref='author', lazy='dynamic')
+    sharelink = db.Column(db.String(64), unique=True)
     files = db.relationship('File', backref='owner', lazy='dynamic')
 
     def __repr__(self):
-        return '<id={} username={} is_admin={}>'.format(self.id, self.username, self.is_admin)
+        return '<id={} username={} is_admin={} sharelink={}>'.format(self.id, self.username, self.is_admin, self.sharelink)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

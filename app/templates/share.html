@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <h2>Your Share Link</h2>
+    <a href={{ url_for('shared_files', share_link=current_user.sharelink) }}>{{ 'http://127.0.0.1:5000' + url_for('shared_files', share_link=current_user.sharelink) }}</a>
+    <h2>Shared Files</h2>
+    <table class="table">
+        <tr>
+            <th>#</th>
+            <th>File name</th> 
+            <th>Uploaded (UTC)</th>
+            <th>Share</th>
+        </tr>
+        {% for file in shared_files %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ file.filename }}</td>
+            {% if file.uploadtime %}
+            <td>{{ file.uploadtime.replace(microsecond=0) }}</td>
+            {% else %}
+            <td>{{ file.uploadtime }}</td>
+            {% endif %}
+            <td>
+                <a href={{ url_for('stop_sharing', user_name=current_user.username, file_id=file.id) }} type="button" class="btn btn-danger btn-sm">Stop Sharing</a>
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+
+    <br>
+    
+    <h2>Not Shared Files</h2>
+    <table class="table">
+        <tr>
+            <th>#</th>
+            <th>File name</th> 
+            <th>Uploaded (UTC)</th>
+            <th>Share</th>
+        </tr>
+        {% for file in not_shared_files %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ file.filename }}</td>
+            {% if file.uploadtime %}
+            <td>{{ file.uploadtime.replace(microsecond=0) }}</td>
+            {% else %}
+            <td>{{ file.uploadtime }}</td>
+            {% endif %}
+            <td>
+                <a href={{ url_for('start_sharing', user_name=current_user.username, file_id=file.id) }} type="button" class="btn btn-primary btn-sm">Share File</a>
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </table>
+</div>
+{% endblock %}

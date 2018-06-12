@@ -24,6 +24,8 @@ def upload():
             flash('No selected file')
             return redirect(request.url)
         if file:
+            if not os.path.isdir(app.config['UPLOAD_FOLDER']):
+                os.mkdir(app.config['UPLOAD_FOLDER'])
             filename = secure_filename(file.filename)
             tmp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(tmp_file_path)
@@ -43,13 +45,13 @@ def upload():
                         flash('File already exists with name "' + exists_name + '"')
                         break
                 if not file_exists:
-                    user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), user_id=current_user.id)
+                    user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), is_shared=False, user_id=current_user.id)
                     db.session.add(user_file)
                     db.session.commit()
                     flash('File LINK added')  # change!     
             else:
                 os.system('mv ' + tmp_file_path + ' '+ file_path)
-                user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), user_id=current_user.id)
+                user_file = File(filepath=file_path, filename=filename, uploadtime=datetime.utcnow(), is_shared=False, user_id=current_user.id)
                 db.session.add(user_file)
                 db.session.commit()
                 flash('File added')
@@ -92,7 +94,8 @@ def admin():
     if current_user.is_admin:
         form = AddUserForm()
         if form.validate_on_submit():
-            user = User(username=form.username.data, is_admin=form.is_admin.data)
+            share_link = functions.generate_sharelink()
+            user = User(username=form.username.data, is_admin=form.is_admin.data, sharelink=share_link)
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
@@ -101,34 +104,70 @@ def admin():
         return redirect(url_for('user_files'))
     return render_template('admin.html', title='Admin', form=form)
 
-@app.route('/download/<user_name>/<file_id>')
-@login_required
-def download(user_name, file_id):
-    if current_user.username == user_name:
-        file = File.query.filter_by(id=file_id).first()
-        file_path = file.filepath
-        file_name = file.filename
+@app.route('/download/<file_id>')
+def download(file_id):
+    file = File.query.filter_by(id=file_id).first()
+    file_path = file.filepath
+    file_name = file.filename
+    if current_user.is_anonymous and file.is_shared == True:
+        return send_file(file_path, as_attachment=True, attachment_filename=file_name)
+    elif current_user.id == file.user_id or file.is_shared == True:
         return send_file(file_path, as_attachment=True, attachment_filename=file_name)
     else:
         return redirect(url_for('user_files'))
 
-@app.route('/delete/<user_name>/<file_id>')
+@app.route('/delete/<file_id>')
 @login_required
-def delete(user_name, file_id):
-    if current_user.username == user_name:
+def delete(file_id):
+    file = File.query.filter_by(id=file_id).first()
+    file_name = file.filename
+    user_id = file.user_id
+    if current_user.id == user_id:
+        has_another_link = False
         file = File.query.filter_by(id=file_id).first()
         file_name = file.filename
         db.session.delete(file)
         db.session.commit()
         file_path = file.filepath
         filepath_list = File.query.filter_by(filepath=file_path)
-        while filepath_list:
+        for f in filepath_list:
             has_another_link = True
-        if has_another_link:
-            has_another_link = False
-        else:
+        if not has_another_link:
             os.remove(file_path)
             os.removedirs(file_path[:-26])
-        flash('File ' + file_name + ' is deleted')
+        flash('File "' + file_name + '" is deleted')
 
     return redirect(url_for('user_files'))
+
+@app.route('/share')
+@login_required
+def share_files():
+    shared_files = File.query.filter_by(user_id=current_user.id, is_shared=True)
+    not_shared_files = File.query.filter_by(user_id=current_user.id, is_shared=False)
+    return render_template('share.html', shared_files=shared_files, not_shared_files=not_shared_files)
+
+@app.route('/start_sharing/<user_name>/<file_id>')
+@login_required
+def start_sharing(user_name, file_id):
+    if current_user.username == user_name:
+        file = File.query.filter_by(id=file_id).first()
+        file.is_shared = True
+        db.session.commit()
+
+    return redirect(url_for('share_files'))
+
+@app.route('/stop_sharing/<user_name>/<file_id>')
+@login_required
+def stop_sharing(user_name, file_id):
+    if current_user.username == user_name:
+        file = File.query.filter_by(id=file_id).first()
+        file.is_shared = False
+        db.session.commit()
+
+    return redirect(url_for('share_files'))
+
+@app.route('/shared_files/<share_link>')
+def shared_files(share_link):
+    user = User.query.filter_by(sharelink=share_link).first()
+    files = File.query.filter_by(user_id=user.id, is_shared=True)
+    return render_template('shared_files.html', files=files)
