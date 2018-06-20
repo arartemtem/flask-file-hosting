@@ -93,6 +93,7 @@ def logout():
 def admin():
     if current_user.is_admin:
         form = AddUserForm()
+        users = User.query.all()
         if form.validate_on_submit():
             share_link = functions.generate_sharelink()
             user = User(username=form.username.data, is_admin=form.is_admin.data, sharelink=share_link)
@@ -100,9 +101,22 @@ def admin():
             db.session.add(user)
             db.session.commit()
             flash('User added')
+            return redirect(url_for('admin'))
     else:
         return redirect(url_for('user_files'))
-    return render_template('admin.html', title='Admin', form=form)
+    return render_template('admin.html', title='Admin', form=form, users=users)
+
+@app.route('/admin/delete_user/<user_id>')
+@login_required
+def delete_user(user_id):
+    if current_user.is_admin:
+        user = User.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted')
+        return redirect(url_for('admin'))
+    else:
+        return redirect(url_for('files'))
 
 @app.route('/download/<file_id>')
 def download(file_id):
