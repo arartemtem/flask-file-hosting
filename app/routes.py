@@ -14,6 +14,7 @@ def upload():
     form = UploadForm()
     if request.method == 'POST':
         # check if the post request has the file part
+        print(request.files)
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
@@ -144,7 +145,7 @@ def delete(file_id):
         db.session.commit()
         file_path = file.filepath
         filepath_list = File.query.filter_by(filepath=file_path)
-        for f in filepath_list:
+        for _ in filepath_list:
             has_another_link = True
         if not has_another_link:
             os.remove(file_path)
