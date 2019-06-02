@@ -67,7 +67,7 @@ def settings():
     timezone = User.query.filter_by(id=current_user.id).first().timezone
     if form.validate_on_submit():
         UserActions().change_password(current_user.id, form.old_password.data, form.password.data)
-    return render_template('settings.html', title='Admin', timezones=pytz.common_timezones, user_timezone=timezone,
+    return render_template('settings.html', title='Settings', timezones=pytz.common_timezones, user_timezone=timezone,
                            form=form)
 
 
