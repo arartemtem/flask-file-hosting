@@ -1,7 +1,9 @@
 venv/
+venv3.7/
 .vscode/
 files/
 __pycache__/
 app.db
 app.db-journal
 app/__pycache__/
+.idea/

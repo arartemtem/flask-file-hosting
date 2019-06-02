@@ -1,4 +1,4 @@
-alembic==0.9.9
+alembic==1.0.10
 astroid==1.6.5
 click==6.7
 dominate==2.3.1

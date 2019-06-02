@@ -9,7 +9,7 @@
         <tr>
             <th>#</th>
             <th>File name</th> 
-            <th>Uploaded (UTC)</th>
+            <th>Uploaded</th>
             <th>Share</th>
         </tr>
         {% for file in shared_files %}
@@ -17,12 +17,12 @@
             <td>{{ loop.index }}</td>
             <td>{{ file.filename }}</td>
             {% if file.uploadtime %}
-            <td>{{ file.uploadtime.replace(microsecond=0) }}</td>
+            <td>{{ (file.uploadtime + timedelta).replace(microsecond=0) }}</td>
             {% else %}
             <td>{{ file.uploadtime }}</td>
             {% endif %}
             <td>
-                <a href={{ url_for('stop_sharing', user_name=current_user.username, file_id=file.id) }} type="button" class="btn btn-danger btn-sm">Stop Sharing</a>
+                <a href={{ url_for('stop_sharing', file_id=file.id) }} type="button" class="btn btn-danger btn-sm">Stop Sharing</a>
             </td>
         </tr>
         {% endfor %}
@@ -36,7 +36,7 @@
         <tr>
             <th>#</th>
             <th>File name</th> 
-            <th>Uploaded (UTC)</th>
+            <th>Uploaded</th>
             <th>Share</th>
         </tr>
         {% for file in not_shared_files %}
@@ -44,12 +44,12 @@
             <td>{{ loop.index }}</td>
             <td>{{ file.filename }}</td>
             {% if file.uploadtime %}
-            <td>{{ file.uploadtime.replace(microsecond=0) }}</td>
+            <td>{{ (file.uploadtime + timedelta).replace(microsecond=0) }}</td>
             {% else %}
             <td>{{ file.uploadtime }}</td>
             {% endif %}
             <td>
-                <a href={{ url_for('start_sharing', user_name=current_user.username, file_id=file.id) }} type="button" class="btn btn-primary btn-sm">Share File</a>
+                <a href={{ url_for('start_sharing', file_id=file.id) }} type="button" class="btn btn-primary btn-sm">Share File</a>
             </td>
         </tr>
         {% endfor %}

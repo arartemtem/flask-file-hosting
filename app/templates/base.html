@@ -21,12 +21,13 @@
                     {% if not current_user.is_anonymous %}
                     <li><a href="{{ url_for('upload') }}">Upload</a></li>
                     <li><a href="{{ url_for('user_files') }}">Files</a></li>
-                    <li><a href="{{ url_for('share_files') }}">Share</a></li>
+                    <li><a href="{{ url_for('share_files_list') }}">Share</a></li>
+                    <li><a href="{{ url_for('settings') }}">Settings</a></li>
                     {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_admin %}
-                    <li><a href="{{ url_for('admin') }}">Administration</a></li>
+                    <li><a href="{{ url_for('admin_page') }}">Administration</a></li>
                     {% endif %}
                     {% if current_user.is_anonymous %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
@@ -41,12 +42,16 @@
 
 {% block content %}
     <div class="container">
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info" role="alert">{{ message }}</div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <!-- <strong>Title</strong> --> {{ message }}
+              </div>
             {% endfor %}
-        {% endif %}
+          {% endif %}
         {% endwith %}
 
         {# application content needs to be provided in the app_content block #}
