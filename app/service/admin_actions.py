@@ -1,16 +1,11 @@
-import os
-from datetime import datetime
 import time
 import random
 import string
 
-import hashlib
-from flask_login import login_user, logout_user, current_user, login_required
-from flask import render_template, request, flash, redirect, url_for, send_file
-from sqlalchemy import desc
-from werkzeug.urls import url_parse
+from flask_login import current_user
+from flask import flash, redirect, url_for
 
-from app import app, db, functions
+from app import db
 from app.models import User, File
 from app.service.file_actions import FileActions
 

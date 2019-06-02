@@ -1,10 +1,10 @@
 import datetime
 
 import pytz
-from flask import render_template, request, flash, redirect, url_for, send_file
-from flask_login import login_user, logout_user, current_user, login_required
+from flask import render_template, request, flash, redirect, url_for
+from flask_login import logout_user, current_user, login_required
 
-from app import app, db
+from app import app
 from app.forms import LoginForm, UploadForm, AddUserForm, SearchForm, ChangePasswordForm
 from app.models import User, File
 from app.service.file_actions import FileActions

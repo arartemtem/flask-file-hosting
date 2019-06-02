@@ -2,12 +2,12 @@ import os
 from datetime import datetime
 
 import hashlib
-from flask_login import login_user, logout_user, current_user, login_required
-from flask import render_template, request, flash, redirect, url_for, send_file
+from flask_login import current_user
+from flask import flash, redirect, url_for, send_file
 from sqlalchemy import desc
 
-from app import app, db, functions
-from app.models import User, File, FilePath
+from app import app, db
+from app.models import File, FilePath
 
 
 class FileActions:
