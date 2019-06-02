@@ -35,7 +35,11 @@ def delete(file_id):
 @app.route('/admin_page/delete_user/<user_id>')
 @login_required
 def delete_user(user_id):
-    return AdminActions().delete_user(user_id)
+    if current_user.is_admin:
+        AdminActions().delete_user(user_id)
+        return redirect(url_for('admin_page'))
+    else:
+        return redirect(url_for('user_files'))
 
 
 @app.route('/download/<file_id>')
@@ -61,7 +65,8 @@ def login():
 def settings():
     form = ChangePasswordForm()
     timezone = User.query.filter_by(id=current_user.id).first().timezone
-    UserActions().change_password(form)
+    if form.validate_on_submit():
+        UserActions().change_password(current_user.id, form.old_password.data, form.password.data)
     return render_template('settings.html', title='Admin', timezones=pytz.common_timezones, user_timezone=timezone,
                            form=form)
 
@@ -69,7 +74,7 @@ def settings():
 @app.route('/settings/set_timezone/<timezone>')
 @login_required
 def set_timezone(timezone):
-    return UserActions().set_timezone(timezone)
+    return UserActions().set_timezone(current_user.id, timezone)
 
 
 @app.route('/shared_files/<share_link>')
@@ -92,14 +97,14 @@ def share_files_list():
 @app.route('/start_sharing/<file_id>')
 @login_required
 def start_sharing(file_id):
-    FileActions().sharing(file_id, share=True)
+    FileActions().sharing(current_user.id, file_id, share=True)
     return redirect(url_for('share_files_list'))
 
 
 @app.route('/stop_sharing/<file_id>')
 @login_required
 def stop_sharing(file_id):
-    FileActions().sharing(file_id, share=False)
+    FileActions().sharing(current_user.id, file_id, share=False)
     return redirect(url_for('share_files_list'))
 
 

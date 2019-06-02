@@ -7,6 +7,17 @@ from app.models import User
 
 
 class UserActions:
+
+    def change_password(self, user_id, old_password, new_password):
+        user = User.query.filter_by(id=user_id).first()
+        if not user.check_password(old_password):
+            flash('Invalid old password', 'danger')
+            return redirect(url_for('settings'))
+        else:
+            user.set_password(new_password)
+            db.session.commit()
+            flash('Password Changed!', 'success')
+            return redirect(url_for('settings'))
     
     def login(self, form):
         if current_user.is_authenticated:
@@ -23,21 +34,9 @@ class UserActions:
             return redirect(next_page)
         return None
 
-    def change_password(self, form):
-        if form.validate_on_submit():
-            user = User.query.filter_by(id=current_user.id).first()
-            if not user.check_password(form.old_password.data):
-                flash('Invalid old password', 'danger')
-                return redirect(url_for('settings'))
-            else:
-                user.set_password(form.password.data)
-                db.session.commit()
-                flash('Password Changed!', 'success')
-                return redirect(url_for('settings'))
-
-    def set_timezone(self, timezone):
+    def set_timezone(self, user_id, timezone):
         timezone = timezone.replace('-', '/')
-        user_row = User.query.filter_by(id=current_user.id).first()
+        user_row = User.query.filter_by(id=user_id).first()
         user_row.timezone = timezone
         db.session.commit()
         flash('Timezone saved', 'success')

@@ -46,9 +46,9 @@ class FileActions:
             files = File.query.filter_by(user_id=current_user.id).order_by(desc(File.uploadtime))
         return files
 
-    def sharing(self, file_id, share: bool):
+    def sharing(self, user_id, file_id, share: bool):
         file = File.query.filter_by(id=file_id).first()
-        if current_user.id == file.user_id:
+        if user_id == file.user_id:
             file.is_shared = True if share else False
             return db.session.commit()
         else:
