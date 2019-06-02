@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h2>Timezone</h2>
+    <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {{ user_timezone or 'Choose your timezone...' }}
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {% for zone in timezones %}
+                <li><a class="dropdown-item" href="{{ url_for('set_timezone', timezone=zone.replace('/', '-')) }}">{{ zone }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <br>
+
+    <h2>Change Password</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post" role="form">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+                {{ wtf.form_field(form.old_password) }}
+                {{ wtf.form_field(form.password) }}
+                {{ wtf.form_field(form.password2) }}
+                {{ wtf.form_field(form.submit) }}
+            </form>
+        </div>
+        <br>
+    </div>
+{% endblock %}

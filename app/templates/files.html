@@ -1,24 +1,27 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
 <div class="container">
     <h2>Your Files</h2>
+    <div class="row">
+        <div class="col-md-5">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+    <br>
     <table class="table">
         <tr>
             <th>#</th>
             <th>File name</th> 
-            <th>Uploaded (UTC)</th>
+            <th>Uploaded</th>
             <th>Action</th>
         </tr>
         {% for file in files %}
         <tr>
             <td>{{ loop.index }}</td>
             <td>{{ file.filename }}</td>
-            {% if file.uploadtime %}
-            <td>{{ file.uploadtime.replace(microsecond=0) }}</td>
-            {% else %}
-            <td>{{ file.uploadtime }}</td>
-            {% endif %}
+            <td>{{ (file.uploadtime + timedelta).replace(microsecond=0) }}</td>
             <td>
                 <a href={{ url_for('download',file_id=file.id) }} type="button" class="btn btn-primary btn-sm" download> Download</a>
                 <a href={{ url_for('delete', file_id=file.id) }} type="button" class="btn btn-danger btn-sm"> Delete</a>
