@@ -58,9 +58,9 @@ class FileActions:
         if request.method == 'POST':
             file = self._check_file(request)
             if file:
-                file_exists, file_path = self._check_file_exists(file)
+                file_exists, dir_for_file, new_filename = self._check_file_exists(file)
                 if file_exists:
-                    filepath_id = FilePath.query.filter_by(filepath=file_path).first().id
+                    filepath_id = FilePath.query.filter_by(filepath=os.path.join(dir_for_file, new_filename)).first().id
                     is_user_file = File.query.filter_by(filepath_id=filepath_id, user_id=current_user.id).first()
                     if is_user_file:
                         exists_name = is_user_file.filename
@@ -72,10 +72,11 @@ class FileActions:
                         db.session.commit()
                         flash('File LINK added', 'success')
                 else:
-                    file.save(file_path)
-                    filepath = FilePath(filepath=file_path)
+                    file.save(dir_for_file, new_filename)
+                    print('======SAVE======')
+                    filepath = FilePath(filepath=os.path.join(dir_for_file, new_filename))
                     db.session.add(filepath)
-                    filepath = FilePath.query.filter_by(filepath=file_path).first()
+                    filepath = FilePath.query.filter_by(filepath=os.path.join(dir_for_file, new_filename)).first()
                     user_file = File(filepath_id=filepath.id, filename=file.filename, uploadtime=datetime.utcnow(),
                                      is_shared=False,
                                      user_id=current_user.id)
@@ -100,7 +101,9 @@ class FileActions:
     def _check_file_exists(self, file):
         md5_filename = hashlib.md5(file.read()).hexdigest()
         dir_for_file = os.path.join(app.config['UPLOAD_FOLDER'], md5_filename[0:3], md5_filename[3:6])
-        os.system('mkdir -p ' + dir_for_file)  # crete folder if not exists
+        # os.system('mkdir -p ' + dir_for_file)  # crete folder if not exists
+        if not os.path.exists(dir_for_file):
+            os.makedirs(dir_for_file)
         new_filename = md5_filename[7:]
         file_path = os.path.join(dir_for_file, new_filename)
-        return os.path.exists(file_path), file_path
+        return os.path.exists(file_path), dir_for_file, new_filename
