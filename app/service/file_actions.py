@@ -29,7 +29,7 @@ class FileActions:
 
     def download_file(self, file_id):
         file = File.query.filter_by(id=file_id).first()
-        file_path = FilePath.query.filter_by(id=file.filepath_id).first()
+        file_path = FilePath.query.filter_by(id=file.filepath_id).first().filepath
         file_name = file.filename
         if current_user.is_anonymous and not file.is_shared:
             flash('Access Denied!', 'danger')

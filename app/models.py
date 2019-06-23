@@ -44,4 +44,4 @@ class FilePath(db.Model):
     filepath = db.Column(db.String(140))
 
     def __repr__(self):
-        return f'<id={self.id} filename={self.filename} user_id={self.user_id}>'
+        return f'<id={self.id} filepath={self.filepath}>'
