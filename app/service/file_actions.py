@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import time
 
 import hashlib
 from flask_login import current_user
@@ -56,10 +57,11 @@ class FileActions:
 
     def upload_file(self, request):
         if request.method == 'POST':
-            file = self._check_file(request)
+            file, temp_file_path = self._check_file(request)
             if file:
                 file_exists, file_path = self._check_file_exists(file)
                 if file_exists:
+                    os.remove(temp_file_path)
                     filepath_id = FilePath.query.filter_by(filepath=file_path).first().id
                     is_user_file = File.query.filter_by(filepath_id=filepath_id, user_id=current_user.id).first()
                     if is_user_file:
@@ -72,7 +74,7 @@ class FileActions:
                         db.session.commit()
                         flash('File LINK added', 'success')
                 else:
-                    file.save(file_path)
+                    os.rename(temp_file_path, file_path)
                     filepath = FilePath(filepath=file_path)
                     db.session.add(filepath)
                     filepath = FilePath.query.filter_by(filepath=file_path).first()
@@ -95,12 +97,15 @@ class FileActions:
         if file.filename == '':
             flash('No selected file', 'warning')
             return redirect(request.url)
-        return file
+        temp_file_path = os.path.join(app.config['UPLOAD_FOLDER'], str(time.time()).replace('.', '-'))
+        file.save(temp_file_path)
+        return file, temp_file_path
 
     def _check_file_exists(self, file):
         md5_filename = hashlib.md5(file.read()).hexdigest()
         dir_for_file = os.path.join(app.config['UPLOAD_FOLDER'], md5_filename[0:3], md5_filename[3:6])
-        os.system('mkdir -p ' + dir_for_file)  # crete folder if not exists
+        if not os.path.exists(dir_for_file):
+            os.makedirs(dir_for_file)
         new_filename = md5_filename[7:]
         file_path = os.path.join(dir_for_file, new_filename)
         return os.path.exists(file_path), file_path
