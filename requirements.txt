@@ -22,6 +22,6 @@ pytz==2019.1
 six==1.11.0
 SQLAlchemy==1.3.4
 visitor==0.1.3
-Werkzeug==0.15.4
+Werkzeug==0.15.5
 wrapt==1.10.11
 WTForms==2.2.1
